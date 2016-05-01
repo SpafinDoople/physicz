@@ -1,40 +1,20 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var worldAABB = new b2AABB();
-worldAABB.minVertex.Set(-1000, -1000);
-worldAABB.maxVertex.Set(1000, 1000);
-var gravity = new b2Vec2(0, 300);
-var doSleep = true;
-var world = new b2World(worldAABB, gravity, doSleep);
+var world = Box2D.b2World( Box2D.b2Vec2(0.0, -10.0) );
 
 var iteration = 0;
 var timeStep = 1/60;
+
 var player = createDefaultCircle(25,400);
-player.AllowSleeping(false);
 
 
 function createDefaultCircle(x,y) {
-  var circleSd = new b2CircleDef();
-  circleSd.density = 1.0;
-  circleSd.radius = 15;
-  circleSd.restitution = 0.8;
-  circleSd.friction = 20;
-  var circleBd = new b2BodyDef();
-  circleBd.AddShape(circleSd);
-  circleBd.position.Set(x,y);
-  var circleBody = world.CreateBody(circleBd);
-  return circleBody;
+	//Figure out how to make a circle body
 }
 
 function createGround(x,y,w,h) {
-  var groundSd = new b2BoxDef();
-  groundSd.extents.Set(w, h);
-  groundSd.restitution = 0.2;
-  var groundBd = new b2BodyDef();
-  groundBd.AddShape(groundSd);
-  groundBd.position.Set(x, y);
-  world.CreateBody(groundBd);
+	//Figure out how to create a rectangle body
 }
 
 function mainLoop(){
@@ -58,25 +38,19 @@ function keyboardListener(e) {
   //37-40 = left up right down
   var key = e.keyCode;
   var speed = 1000000;
-  player.WakeUp();
   if(key == 37) {
-    player.ApplyForce(new b2Vec2(-speed,0), player.GetOriginPosition());
+    player.ApplyForce(new Box2D.b2Vec2(-speed,0), player.GetOriginPosition());
   }
   if(key == 38) {
-    player.ApplyImpulse(new b2Vec2(0,-100000), player.GetCenterPosition());
+    player.ApplyImpulse(new Box2D.b2Vec2(0,-100000), player.GetCenterPosition());
   }
   if(key == 39) {
-    player.ApplyForce(new b2Vec2(speed,0), player.GetCenterPosition());
+    player.ApplyForce(new Box2D.b2Vec2(speed,0), player.GetCenterPosition());
   }
    if(key== 40) {
-     player.ApplyForce(new b2Vec2(0,speed), player.GetCenterPosition());
+     player.ApplyForce(new Box2D.b2Vec2(0,speed), player.GetCenterPosition());
    }
 }
-var listener = new Box2D.Dynamics.b2ContactListener;
-listener.BeginContact = function(contact) {
-  console.log(contact.GetFixtureA().GetBody());
-}
-world.SetContactListener(listener);
 
 createGround(100,490,100,25); //bottome ground
 createGround(350,490,50,25);
