@@ -11,6 +11,7 @@ var world = new b2World(worldAABB, gravity, doSleep);
 var iteration = 0;
 var timeStep = 1/60;
 var player = createDefaultCircle(25,400);
+player.AllowSleeping(false);
 
 
 function createDefaultCircle(x,y) {
@@ -57,6 +58,7 @@ function keyboardListener(e) {
   //37-40 = left up right down
   var key = e.keyCode;
   var speed = 1000000;
+  player.WakeUp();
   if(key == 37) {
     player.ApplyForce(new b2Vec2(-speed,0), player.GetOriginPosition());
   }
@@ -70,6 +72,11 @@ function keyboardListener(e) {
      player.ApplyForce(new b2Vec2(0,speed), player.GetCenterPosition());
    }
 }
+var listener = new Box2D.Dynamics.b2ContactListener;
+listener.BeginContact = function(contact) {
+  console.log(contact.GetFixtureA().GetBody());
+}
+world.SetContactListener(listener);
 
 createGround(100,490,100,25); //bottome ground
 createGround(350,490,50,25);
