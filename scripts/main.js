@@ -2,8 +2,9 @@ var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 
 var keys = [];
+var jump = 0;
 
-var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, 300.0) );
+var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, 500.0) );
 var debugDraw = getCanvasDebugDraw();
 var e_shapeBit = 0x0001;
 debugDraw.SetFlags(e_shapeBit);
@@ -26,7 +27,7 @@ function createCircle(x,y,r) {
   var cshape = new Box2D.b2CircleShape();
   cshape.set_m_radius(r);
   var fix = body.CreateFixture(cshape, 1.0);
-  fix.SetRestitution(1);
+  fix.SetRestitution(0.8);
 
   body.SetAwake(1);
   body.SetActive(1);
@@ -64,8 +65,15 @@ function mainLoop(){
   if(keys[37]) player.ApplyForce(new Box2D.b2Vec2(-speed,0), player.GetWorldCenter());
   if(keys[39]) player.ApplyForce(new Box2D.b2Vec2(speed,0), player.GetWorldCenter());
   if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,speed), player.GetWorldCenter());
-  //console.log(player.GetLinearVelocity.get_x());
-  if(keys[38]) player.ApplyLinearImpulse(new b2Vec2(/*new Box2D.b2Vec2(player.GetLinearVelocity().get_x()*/0,-100000), player.GetWorldCenter());
+  //console.log(player.GetLinearVelocity().get_x());
+  if(keys[38]){
+    if(jump == 0) {
+      console.log("runn");
+      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),-200));
+      jump = 1;
+    }
+  }
+  if(player.GetPosition().get_y() > 444)jump = 0;
 }
 
 function draw(context){
