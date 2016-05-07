@@ -68,14 +68,14 @@ function mainLoop(){
   var speed = 10 * player.GetMass();
   if(keys[37]) player.ApplyForce(new Box2D.b2Vec2(-speed,0), player.GetWorldCenter());
   if(keys[39]) player.ApplyForce(new Box2D.b2Vec2(speed,0), player.GetWorldCenter());
-  if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,speed), player.GetWorldCenter());
+  if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,-speed), player.GetWorldCenter());
   if(keys[38]){
     if(jump == 0) {
-      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),10));
+      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),5));
       jump = 1;
     }
   }
-  if(player.GetPosition().get_y() <= 3)jump = 0;
+  //if(player.GetPosition().get_y() <= 2.1)jump = 0;
 }
 
 function draw(context){
@@ -115,15 +115,34 @@ function keyDetect(e) {
   keys[key] = true;
 }
 
-createRectangle(2,0,4,3); //bottom ground
-createRectangle(13,0,8,3); //bottom ground
-createRectangle(25,0,10,3); //bottom ground
+listener = new Box2D.JSContactListener();
+listener.BeginContact = function (contactPtr) {
+    var contact = Box2D.wrapPointer( contactPtr, b2Contact );
+    var fixtureA = contact.GetFixtureA();
+    var fixtureB = contact.GetFixtureB();
+    var other;
+    if(fixtureA.GetBody() == player) other = fixtureB.GetBody();
+    else if(fixtureB.GetBody() == player) other = fixtureA.GetBody();
+    else return;
+    if(other.type == "ground") {
+      jump = 0;
+    }
+    //console.log(other.type);
+}
+listener.EndContact = function() {jump = 1};
+listener.PreSolve = function() {};
+listener.PostSolve = function() {};
 
-createRectangle(31,12,2,24); //right wall
-createRectangle(-1,12,2,24); //left wall
-createRectangle(15,25,30,2); //top wall
+createRectangle(2,0,4,3).type = "ground"; //bottom ground
+createRectangle(13,0,8,3).type = "ground"; //bottom ground
+createRectangle(25,0,10,3).type = "ground"; //bottom ground
+
+createRectangle(31,12,2,24).type = "wall"; //right wall
+createRectangle(-1,12,2,24).type = "wall"; //left wall
+createRectangle(15,25,30,2).type = "wall"; //top wall
 
 setInterval(mainLoop, 1000/60);
 document.addEventListener("click", mouseSquare);
 document.addEventListener("keydown", keyDetect);
 document.addEventListener("keyup", keyUp);
+world.SetContactListener( listener );
