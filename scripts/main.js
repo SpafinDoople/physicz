@@ -8,6 +8,7 @@ var canvasWidth = 600;
 var canvasHeight = 480;
 
 var keys = [];
+var jump = 0;
 
 var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, -9.8) );
 var debugDraw = getCanvasDebugDraw();
@@ -18,7 +19,7 @@ world.SetDebugDraw(debugDraw);
 var iteration = 0;
 var timeStep = 1/60;
 
-var player = createCircle(1,20,.5);
+var player = createCircle(1,4,.5);
 
 initControls();
 function createCircle(x,y,r) {
@@ -31,7 +32,7 @@ function createCircle(x,y,r) {
   var cshape = new Box2D.b2CircleShape();
   cshape.set_m_radius(r);
   var fix = body.CreateFixture(cshape, 1.0);
-  fix.SetRestitution(0.8);
+  fix.SetRestitution(0.5);
 
   body.SetAwake(1);
   body.SetActive(1);
@@ -59,17 +60,22 @@ function mainLoop(){
   world.Step(timeStep,iteration);
   draw(context);
   iteration++;
-  if(player.GetPosition().get_y() > 500) {
-    player.SetTransform(new b2Vec2(20,400), 0);
+  if(player.GetPosition().get_y() < 0) {
+    player.SetTransform(new b2Vec2(1,4), 0);
+		player.SetLinearVelocity(new b2Vec2(0,0));
   }
   //37-40 = left up right down
   var speed = 10 * player.GetMass();
   if(keys[37]) player.ApplyForce(new Box2D.b2Vec2(-speed,0), player.GetWorldCenter());
   if(keys[39]) player.ApplyForce(new Box2D.b2Vec2(speed,0), player.GetWorldCenter());
   if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,speed), player.GetWorldCenter());
-  if(keys[38]) {
-		player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),player.GetLinearVelocity().get_y()+2));
-	}
+  if(keys[38]){
+    if(jump == 0) {
+      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),10));
+      jump = 1;
+    }
+  }
+  if(player.GetPosition().get_y() <= 3)jump = 0;
 }
 
 function draw(context){
@@ -109,7 +115,7 @@ function keyDetect(e) {
   keys[key] = true;
 }
 
-createRectangle(5,0,4,3); //bottom ground
+createRectangle(2,0,4,3); //bottom ground
 createRectangle(13,0,8,3); //bottom ground
 createRectangle(25,0,10,3); //bottom ground
 
