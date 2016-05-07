@@ -1,9 +1,15 @@
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 
+var worldWidth = 30;
+var worldHeight = 24;
+
+var canvasWidth = 600;
+var canvasHeight = 480;
+
 var keys = [];
 
-var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, 300.0) );
+var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, -9.8) );
 var debugDraw = getCanvasDebugDraw();
 var e_shapeBit = 0x0001;
 debugDraw.SetFlags(e_shapeBit);
@@ -12,9 +18,8 @@ world.SetDebugDraw(debugDraw);
 var iteration = 0;
 var timeStep = 1/60;
 
-var player = createCircle(20,400,10);
+var player = createCircle(1,20,.5);
 
-console.log(player);
 initControls();
 function createCircle(x,y,r) {
   var bd = new Box2D.b2BodyDef();
@@ -26,7 +31,7 @@ function createCircle(x,y,r) {
   var cshape = new Box2D.b2CircleShape();
   cshape.set_m_radius(r);
   var fix = body.CreateFixture(cshape, 1.0);
-  fix.SetRestitution(1);
+  fix.SetRestitution(0.8);
 
   body.SetAwake(1);
   body.SetActive(1);
@@ -52,24 +57,30 @@ function createRectangle(x,y,w,h) {
 
 function mainLoop(){
   world.Step(timeStep,iteration);
-  context.fillStyle="#000";
-  context.fillRect(0,0,600,480);
   draw(context);
   iteration++;
   if(player.GetPosition().get_y() > 500) {
     player.SetTransform(new b2Vec2(20,400), 0);
   }
   //37-40 = left up right down
-  var speed = 100000;
+  var speed = 10 * player.GetMass();
   if(keys[37]) player.ApplyForce(new Box2D.b2Vec2(-speed,0), player.GetWorldCenter());
   if(keys[39]) player.ApplyForce(new Box2D.b2Vec2(speed,0), player.GetWorldCenter());
   if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,speed), player.GetWorldCenter());
-  //console.log(player.GetLinearVelocity.get_x());
-  if(keys[38]) player.ApplyLinearImpulse(new b2Vec2(/*new Box2D.b2Vec2(player.GetLinearVelocity().get_x()*/0,-100000), player.GetWorldCenter());
+  if(keys[38]) {
+		player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),player.GetLinearVelocity().get_y()+2));
+	}
 }
 
 function draw(context){
+	context.fillStyle="#000";
+	context.fillRect(0,0,canvasWidth,canvasHeight);
+
   context.save();
+	context.translate(0, canvasHeight);
+	context.scale(1, -1);
+	context.scale(canvasWidth/worldWidth, canvasHeight/worldHeight);
+	context.lineWidth = worldWidth/canvasWidth;
   drawAxes(context);
   context.fillStyle = 'rgb(255,255,0)';
   world.DrawDebugData();
@@ -77,7 +88,9 @@ function draw(context){
 }
 
 function mouseSquare(e) {
-  createCircle(e.clientX,e.clientY,20);
+	var mouseX = e.clientX/(canvasWidth/worldWidth);
+	var mouseY = (canvasHeight-e.clientY)/(canvasHeight/worldHeight);
+  createCircle(mouseX,mouseY,1);
 }
 
 function initControls() {
@@ -96,17 +109,13 @@ function keyDetect(e) {
   keys[key] = true;
 }
 
+createRectangle(5,0,4,3); //bottom ground
+createRectangle(13,0,8,3); //bottom ground
+createRectangle(25,0,10,3); //bottom ground
 
-createRectangle(100,480,200,50); //bottome ground
-createRectangle(350,480,100,50);
-createRectangle(600,480,200,50);
-//createGround(450,120,50,50); //right box
-//createGround(150,120,50,50); //left box
-//createGround(300,280,50,50); //center box
-createRectangle(610,240,20,480); //right wall
-createRectangle(-25,240,20,480); //left wall
-createRectangle(600,-50,600,50); //top wall
-//createCircle(310,60, 20);
+createRectangle(31,12,2,24); //right wall
+createRectangle(-1,12,2,24); //left wall
+createRectangle(15,25,30,2); //top wall
 
 setInterval(mainLoop, 1000/60);
 document.addEventListener("click", mouseSquare);
