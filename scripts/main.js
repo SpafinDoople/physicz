@@ -20,6 +20,7 @@ var iteration = 0;
 var timeStep = 1/60;
 
 var player = createCircle(1,4,.5);
+var goal = createCircle(26,21,0.5).type = "goal";
 
 initControls();
 function createCircle(x,y,r) {
@@ -32,7 +33,8 @@ function createCircle(x,y,r) {
   var cshape = new Box2D.b2CircleShape();
   cshape.set_m_radius(r);
   var fix = body.CreateFixture(cshape, 1.0);
-  fix.SetRestitution(0.5);
+  fix.SetFriction(10);
+  fix.SetRestitution(0);
 
   body.SetAwake(1);
   body.SetActive(1);
@@ -71,7 +73,7 @@ function mainLoop(){
   if(keys[40])player.ApplyForce(new Box2D.b2Vec2(0,-speed), player.GetWorldCenter());
   if(keys[38]){
     if(jump == 0) {
-      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),5));
+      player.SetLinearVelocity(new Box2D.b2Vec2(player.GetLinearVelocity().get_x(),8));
       jump = 1;
     }
   }
@@ -127,6 +129,9 @@ listener.BeginContact = function (contactPtr) {
     if(other.type == "ground") {
       jump = 0;
     }
+    if(other.type == "goal") {
+      
+    }
     //console.log(other.type);
 }
 listener.EndContact = function() {jump = 1};
@@ -134,8 +139,11 @@ listener.PreSolve = function() {};
 listener.PostSolve = function() {};
 
 createRectangle(2,0,4,3).type = "ground"; //bottom ground
-createRectangle(13,0,8,3).type = "ground"; //bottom ground
-createRectangle(25,0,10,3).type = "ground"; //bottom ground
+createRectangle(13,4,8,1.5).type = "ground"; //bottom ground
+createRectangle(25,8,10,1.5).type = "ground"; //bottom ground
+createRectangle(13,12,8,1.5).type = "ground";
+createRectangle(2,16 ,9,2).type = "ground";
+createRectangle(27, 20, 8, 1.5).type = "ground";
 
 createRectangle(31,12,2,24).type = "wall"; //right wall
 createRectangle(-1,12,2,24).type = "wall"; //left wall
