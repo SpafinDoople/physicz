@@ -15,7 +15,7 @@ function drawJoint(joint, context) {
 	var x2 = b2.m_position;
 	var p1 = joint.GetAnchor1();
 	var p2 = joint.GetAnchor2();
-	context.strokeStyle = '#000';
+	context.strokeStyle = '#1111ff';
 	context.beginPath();
 	switch (joint.m_type) {
 	case b2Joint.e_distanceJoint:
@@ -47,7 +47,7 @@ function drawJoint(joint, context) {
 	context.stroke();
 }
 function drawShape(shape, context) {
-	context.strokeStyle = '#11ff11';
+	context.strokeStyle = '#00ff00';
 	context.beginPath();
 	switch (shape.m_type) {
 	case b2Shape.e_circleShape:
