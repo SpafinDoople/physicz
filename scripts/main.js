@@ -30,6 +30,21 @@ var weWon = false;
 
 
 initControls();
+function createCoin(x,y,r,type) {
+  var bd = new Box2D.b2BodyDef();
+  bd.set_type(Module.b2_staticBody);
+  bd.set_position(new Box2D.b2Vec2(x, y));
+  var body = world.CreateBody(bd);
+  var cshape = new Box2D.b2CircleShape();
+  cshape.set_m_radius(r);
+  var fix = body.CreateFixture(cshape, 1.0);
+  fix.SetFriction(10);
+  fix.SetRestitution(0);
+  fix.SetSensor(true);
+  body.type = type;
+  levelCoins.push(body);
+  return body;
+}
 function createCircle(x,y,r,type) {
   var bd = new Box2D.b2BodyDef();
   bd.set_type(Module.b2_dynamicBody);
@@ -42,15 +57,8 @@ function createCircle(x,y,r,type) {
   var fix = body.CreateFixture(cshape, 1.0);
   fix.SetFriction(10);
   fix.SetRestitution(0);
-  if(type != undefined) {
-    if(type.substring(0,4) != "coin") {
-      body.SetAwake(1);
-      body.SetActive(1);
-    } else {
-      body.SetAwake(0);
-      body.SetActive(1);
-    }
-  }
+  body.SetAwake(1);
+  body.SetActive(1);
   body.type = type;
   levelBodies.push(body);
   return body;
@@ -199,9 +207,10 @@ var levels = [
   [
     {shape:"circle",x:4,y:4,size:.5, type:"player"},
     {shape:"circle",x:5,y:9,size:.5, type:"goal"},
-    {shape:"rect",x:13,y:0,w:29,h:3, type:"ground"},
+    {shape:"rect",x:0,y:0,w:10,h:3, type:"ground"},
     {shape:"rect",x:24,y:4,w:2,h:1.5, type:"ground"},
-    {shape:"rect",x:5,y:8,w:10,h:1.5, type:"ground"}
+    {shape:"rect",x:5,y:8,w:10,h:1.5, type:"ground"},
+    {shape:"circle",x:24,y:6,size:1/4,type:"coin1"}
   ],
 
   [
@@ -227,8 +236,7 @@ function levelInit() {
     for(var i = 0;i < levelData.length;i ++) {
       if(levelData[i].shape=="circle") {
         if(levelData[i].type.substring(0,4) == "coin") {
-          var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
-          levelCoins.push(circle);
+          var circle = createCoin(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
         } else {
           var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
           if(levelData[i].type == "player") player=circle;
