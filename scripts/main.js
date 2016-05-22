@@ -200,7 +200,7 @@ var levels = [
     {shape:"circle",x:4,y:4,size:.5, type:"player"},
     {shape:"circle",x:5,y:9,size:.5, type:"goal"},
     {shape:"rect",x:13,y:0,w:29,h:3, type:"ground"},
-    {shape:"rect",x:24,y:4,w:8,h:1.5, type:"ground"},
+    {shape:"rect",x:24,y:4,w:2,h:1.5, type:"ground"},
     {shape:"rect",x:5,y:8,w:10,h:1.5, type:"ground"}
   ],
 
@@ -218,6 +218,7 @@ function levelInit() {
   if(levelCoins.length > 0) {
     for(var i = 0;i < levelCoins.length;i ++) {
       world.DestroyBody(levelCoins[i]);
+      levelCoins.splice(i,1);
     }
   }
   levelBodies = [];
@@ -247,6 +248,7 @@ function destroyCoin(type) {
     if(levelCoins[i].type == type) {
       levelCoins[i].SetAwake(1);
       world.DestroyBody(levelCoins[i]);
+      levelCoins.splice(i,1);
       return;
     }
   }
