@@ -10,6 +10,8 @@ var canvasHeight = 480;
 var keys = [];
 var jump = 0;
 var level = 0;
+var coins = 0;
+var coinDestroy = 0;
 
 var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, -9.8) );
 var debugDraw = getCanvasDebugDraw();
@@ -21,10 +23,11 @@ var iteration = 0;
 var timeStep = 1/60;
 
 var levelBodies = [];
+var levelCoins = [];
 var player;
 var goal;
 var weWon = false;
-//hi
+
 
 initControls();
 function createCircle(x,y,r,type) {
@@ -39,9 +42,15 @@ function createCircle(x,y,r,type) {
   var fix = body.CreateFixture(cshape, 1.0);
   fix.SetFriction(10);
   fix.SetRestitution(0);
-
-  body.SetAwake(1);
-  body.SetActive(1);
+  if(type != undefined) {
+    if(type.substring(0,4) != "coin") {
+      body.SetAwake(1);
+      body.SetActive(1);
+    } else {
+      body.SetAwake(0);
+      body.SetActive(1);
+    }
+  }
   body.type = type;
   levelBodies.push(body);
   return body;
@@ -89,6 +98,9 @@ function mainLoop(){
     }
   }
   if(weWon) levelInit();
+  if(coinDestroy) {
+    destroyCoin(coinDestroy);
+  }
   //if(player.GetPosition().get_y() <= 2.1)jump = 0;
 }
 
@@ -97,7 +109,7 @@ function draw(context){
 	context.fillRect(0,0,canvasWidth,canvasHeight);
   context.font = "30px Verdana";
   context.fillStyle = "#fff";
-  context.fillText("Level: " + (level+1), 10,30);
+  context.fillText("Level: " + (level+1) + "  " + "Coins: " + coins, 10,30);
 
   context.save();
 	context.translate(0, canvasHeight);
@@ -147,12 +159,17 @@ listener = new Box2D.JSContactListener();
 listener.BeginContact = function (contactPtr) {
     var other = getOther(contactPtr);
     if(other == null) return;
+    if(other.type == undefined) return;
     if(other.type == "ground") {
       jump = 0;
     }
     if(other.type == "goal"){
       level++;
       weWon = true;
+    }
+    if(other.type.substring(0,4) == "coin"){
+      coins++;
+      coinDestroy = other.type;
     }
 }
 listener.EndContact = function(contactPtr) {
@@ -174,7 +191,9 @@ var levels = [
     {shape:"rect",x:25,y:8,w:10,h:1.5, type:"ground"},
     {shape:"rect",x:13,y:12,w:8,h:1.5, type:"ground"},
     {shape:"rect",x:2,y:16,w:9,h:2, type:"ground"},
-    {shape:"rect",x:27,y:20,w:8,h:1.5, type:"ground"}
+    {shape:"rect",x:27,y:20,w:8,h:1.5, type:"ground"},
+    {shape:"circle",x:13, y:14,size:1/4,type:"coin1"},
+    {shape:"circle",x:4,y:18,size:1/4,type:"coin2"}
   ],
 
   [
@@ -196,14 +215,24 @@ function levelInit() {
   for(var i = 0;i < levelBodies.length;i ++) {
     world.DestroyBody(levelBodies[i]);
   }
+  if(levelCoins.length > 0) {
+    for(var i = 0;i < levelCoins.length;i ++) {
+      world.DestroyBody(levelCoins[i]);
+    }
+  }
   levelBodies = [];
   if(level < levels.length && level >= 0) {
     var levelData = levels[level];
     for(var i = 0;i < levelData.length;i ++) {
       if(levelData[i].shape=="circle") {
-        var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
-        if(levelData[i].type == "player") player=circle;
-        if(levelData[i].type == "goal") goal=circle;
+        if(levelData[i].type.substring(0,4) == "coin") {
+          var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
+          levelCoins.push(circle);
+        } else {
+          var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
+          if(levelData[i].type == "player") player=circle;
+          if(levelData[i].type == "goal") goal=circle;
+        }
       }
       if(levelData[i].shape=="rect") {
         createRectangle(levelData[i].x,levelData[i].y,levelData[i].w,levelData[i].h,levelData[i].type);
@@ -211,6 +240,18 @@ function levelInit() {
     }
   }
 }
+function destroyCoin(type) {
+  if(type.substring(0,4) != "coin") return;
+  coinDestroy = 0;
+  for(var i = 0;i < levelCoins.length;i ++) {
+    if(levelCoins[i].type == type) {
+      levelCoins[i].SetAwake(1);
+      world.DestroyBody(levelCoins[i]);
+      return;
+    }
+  }
+}
+
 createRectangle(31,12,2,24,"wall"); //right wall
 createRectangle(-1,12,2,24,"wall"); //left wall
 createRectangle(15,25,30,2,"wall");; //top wall
