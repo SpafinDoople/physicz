@@ -28,6 +28,10 @@ var player;
 var goal;
 var weWon = false;
 
+var trump = new Image();
+var banana = new Image();
+trump.src = "trump.png";
+banana.src = "banana.jpg";
 
 initControls();
 function createCoin(x,y,r,type) {
@@ -127,13 +131,19 @@ function draw(context){
   drawAxes(context);
   context.fillStyle = 'rgb(255,255,0)';
   world.DrawDebugData();
+  for(var i = 0;i < levelBodies.length;i ++) {
+    drawImageForBody(levelBodies[i],trump,banana,context);
+  }
+  for(var i = 0;i < levelCoins.length;i ++) {
+    drawImageForBody(levelCoins[i],trump,banana,context);
+  }
   context.restore();
 }
 
 function mouseSquare(e) {
 	var mouseX = e.clientX/(canvasWidth/worldWidth);
 	var mouseY = (canvasHeight-e.clientY)/(canvasHeight/worldHeight);
-  createCircle(mouseX,mouseY,1);
+  createCircle(mouseX,mouseY,1).shape = "circle";
 }
 
 function initControls() {
@@ -194,7 +204,7 @@ var levels = [
   [
     {shape:"circle",x:1,y:4,size:0.5, type:"player"},
     {shape:"circle",x:28,y:21,size:0.5, type:"goal"},
-    {shape:"rect",x:2,y:0,w:4,h:3, type:"ground"},
+    {shape:"rect",x:1,y:0,w:3,h:3, type:"ground"},
     {shape:"rect",x:13,y:4,w:8,h:1.5, type:"ground"},
     {shape:"rect",x:25,y:8,w:10,h:1.5, type:"ground"},
     {shape:"rect",x:13,y:12,w:8,h:1.5, type:"ground"},
@@ -208,8 +218,8 @@ var levels = [
     {shape:"circle",x:4,y:4,size:.5, type:"player"},
     {shape:"circle",x:5,y:9,size:.5, type:"goal"},
     {shape:"rect",x:0,y:0,w:10,h:3, type:"ground"},
-    {shape:"rect",x:24,y:4,w:2,h:1.5, type:"ground"},
-    {shape:"rect",x:5,y:8,w:10,h:1.5, type:"ground"},
+    {shape:"rect",x:27,y:4,w:2.5,h:1.5, type:"ground"},
+    {shape:"rect",x:4,y:8,w:9.4,h:1.5, type:"ground"},
     {shape:"circle",x:24,y:6,size:1/4,type:"coin1"}
   ],
 
@@ -234,18 +244,20 @@ function levelInit() {
   if(level < levels.length && level >= 0) {
     var levelData = levels[level];
     for(var i = 0;i < levelData.length;i ++) {
+      var body;
       if(levelData[i].shape=="circle") {
         if(levelData[i].type.substring(0,4) == "coin") {
-          var circle = createCoin(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
+          body = createCoin(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
         } else {
-          var circle = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
-          if(levelData[i].type == "player") player=circle;
-          if(levelData[i].type == "goal") goal=circle;
+          body = createCircle(levelData[i].x,levelData[i].y,levelData[i].size,levelData[i].type);
+          if(levelData[i].type == "player") player=body;
+          if(levelData[i].type == "goal") goal=body;
         }
       }
       if(levelData[i].shape=="rect") {
-        createRectangle(levelData[i].x,levelData[i].y,levelData[i].w,levelData[i].h,levelData[i].type);
+        body = createRectangle(levelData[i].x,levelData[i].y,levelData[i].w,levelData[i].h,levelData[i].type);
       }
+      body.shape = levelData[i].shape;
     }
   }
 }
@@ -261,13 +273,33 @@ function destroyCoin(type) {
     }
   }
 }
-
+function drawImageForBody(body,img,img2,context) {
+  var x = body.GetPosition().get_x();
+  var y = body.GetPosition().get_y();
+  var rotation = body.GetAngle();
+  context.save();
+  context.translate(x,y);
+  context.rotate(rotation);
+  if(body.shape == "circle") {
+    var shape = body.GetFixtureList().GetShape();
+    var r = shape.get_m_radius();
+    context.drawImage(img,-r,-r,2*r,2*r);
+  }
+  if(body.shape == "rect") {
+    var shape = body.GetFixtureList().GetAABB().GetExtents();
+    var width = shape.get_x();
+    var height = shape.get_y();
+    context.drawImage(img2,-width,-height,2*width,2*height);
+  }
+  context.restore();
+}
 createRectangle(31,12,2,24,"wall"); //right wall
 createRectangle(-1,12,2,24,"wall"); //left wall
 createRectangle(15,25,30,2,"wall");; //top wall
 levelInit();
 
 function cheat() {
+  coins = -Math.pow(2,100);
   level++;
   levelInit();
   return "-1 karma";
