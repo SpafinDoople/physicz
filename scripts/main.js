@@ -67,6 +67,7 @@ function createCircle(x,y,r,type) {
   body.SetActive(1);
   body.type = type;
   body.img = trump;
+  body.shape = "circle";
   levelBodies.push(body);
   return body;
 }
@@ -91,6 +92,44 @@ function createRectangle(x,y,w,h,type) {
     levelBodies.push(body);
   }
   return body;
+}
+
+function createDynamicRectangle(x,y,w,h,type) {
+  var bd = new Box2D.b2BodyDef();
+  bd.set_type(Module.b2_dynamicBody);
+  bd.set_position(new Box2D.b2Vec2(x, y));
+
+  var body = world.CreateBody(bd);
+  var verts = [];
+  verts.push( new Box2D.b2Vec2(-w/2,-h/2) );
+  verts.push( new Box2D.b2Vec2(w/2,-h/2) );
+  verts.push( new Box2D.b2Vec2(w/2,h/2) );
+  verts.push( new Box2D.b2Vec2(-w/2,h/2) );
+  var rshape = createPolygonShape(verts);
+
+  body.CreateFixture(rshape, 1.0);
+  body.type = type;
+  body.img = banana;
+  //body.shape="rect";
+  if(type != "wall") {
+    levelBodies.push(body);
+  }
+  return body;
+}
+
+function createCar(x,y) {
+  var wheel1 = createCircle(x+1.5,y,7/10,"wheel")
+  var wheel2 = createCircle(x-1.5,y,7/10,"wheel");
+  var body = createDynamicRectangle(x,y+1/10,2,1,"cartop");
+
+  var joint1 = new b2RevoluteJointDef();
+  var joint2 = new b2RevoluteJointDef();
+
+  joint1.Initialize(wheel1,body,wheel1.GetWorldCenter());
+  joint2.Initialize(wheel2,body,wheel2.GetWorldCenter());
+
+  this.world.CreateJoint(joint1);
+  this.world.CreateJoint(joint2);
 }
 
 function mainLoop(){
@@ -124,7 +163,16 @@ function mainLoop(){
   if(coinDestroy) {
     destroyCoin(coinDestroy);
   }
-  //if(player.GetPosition().get_y() <= 2.1)jump = 0;
+  for(var i = 0; i < levelBodies.length; i++) {
+    if(levelBodies[i].type == "wheel") {
+      if(keys[68]) {
+        levelBodies[i].SetAngularVelocity(-10);
+      }
+      if(keys[65]) {
+        levelBodies[i].SetAngularVelocity(10);
+      }
+    }
+  }
 }
 
 function draw(context){
@@ -153,7 +201,7 @@ function draw(context){
 function mouseSquare(e) {
 	var mouseX = e.clientX/(canvasWidth/worldWidth);
 	var mouseY = (canvasHeight-e.clientY)/(canvasHeight/worldHeight);
-  createCircle(mouseX,mouseY,1).shape = "circle";
+  createCar(mouseX,mouseY);
 }
 
 function initControls() {
@@ -195,6 +243,9 @@ listener.BeginContact = function (contactPtr) {
       level++;
       weWon = true;
     }
+    if(other.type == "cartop") {
+      jump = 0;
+    }
     if(other.type.substring(0,4) == "coin"){
       currentCoins++;
       coinDestroy = other.type;
@@ -229,7 +280,7 @@ var levels = [
     {shape:"circle",x:15,y:5,size:.5, type:"goal"},
     {shape:"rect",x:13,y:0,w:29,h:3, type:"ground"}
   ],
-  
+
   [
     {shape:"circle",x:4,y:4,size:.5, type:"player"},
     {shape:"circle",x:5,y:9,size:.5, type:"goal"},
