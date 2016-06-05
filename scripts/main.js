@@ -136,9 +136,19 @@ function mainLoop(){
   world.Step(timeStep,iteration);
   draw(context);
   iteration++;
-  if(player.GetPosition().get_y() < 0) {
+  var killMe = [];
+  for(var i = 0; i < levelBodies.length;i ++) {
+    if(levelBodies[i].GetPosition().get_y() < -5) {
+      killMe.push(levelBodies[i]);
+    }
+  }
+  for(var i = 0; i < killMe.length;i ++) {;
+    levelBodies.splice(levelBodies.indexOf(killMe[i]),1);
+    world.DestroyBody(killMe[i]);
+  }
+  if(player.GetPosition().get_y() < -2) {
     player.SetTransform(new b2Vec2(levels[level][0].x,levels[level][0].y), 0);
-		player.SetLinearVelocity(new b2Vec2(0,0));
+    player.SetLinearVelocity(new b2Vec2(0,0));
     player.SetAngularVelocity(0);
     currentCoins = 0;
     destroyCoins();
@@ -328,12 +338,10 @@ function initCoins() {
 }
 
 function destroyCoins() {
-  if(levelCoins.length > 0) {
-    for(var i = 0; i < levelCoins.length; i++) {
-      world.DestroyBody(levelCoins[i]);
-      levelCoins.splice(i,1);
-    }
+  for(var i = 0; i < levelCoins.length; i++) {
+    world.DestroyBody(levelCoins[i]);
   }
+  levelCoins = [];
 }
 
 function destroyCoin(type) {
