@@ -1,18 +1,28 @@
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
+var game = new Game();
 
 var worldWidth = 30;
 var worldHeight = 24;
-
 var canvasWidth = 600;
 var canvasHeight = 480;
 
 var keys = [];
-var jump = 0;
-var level = 0;
-var totalCoins = 0;
-var currentCoins = 0;
-var coinDestroy = 0;
+function initControls() {
+  for (var i = 0; i < 222; i++) {
+    keys.push(false);
+  }
+}
+function keyUp(e) {
+  var key = e.keyCode;
+  keys[key] = false;
+}
+function keyDetect(e) {
+  var key = e.keyCode;
+  keys[key] = true;
+}
+document.addEventListener("keydown", keyDetect);
+document.addEventListener("keyup", keyUp);
 
 var world = new Box2D.b2World( new Box2D.b2Vec2(0.0, -9.8) );
 var debugDraw = getCanvasDebugDraw();
@@ -22,17 +32,6 @@ world.SetDebugDraw(debugDraw);
 
 var iteration = 0;
 var timeStep = 1/60;
-
-var levelBodies = [];
-var levelCoins = [];
-var player;
-var goal;
-var weWon = false;
-
-var trump = new Image();
-var banana = new Image();
-trump.src = "trump.png";
-banana.src = "banana.jpg";
 
 initControls();
 function createCoin(x,y,r,type) {
@@ -51,6 +50,7 @@ function createCoin(x,y,r,type) {
   levelCoins.push(body);
   return body;
 }
+
 function createCircle(x,y,r,type) {
   var bd = new Box2D.b2BodyDef();
   bd.set_type(Module.b2_dynamicBody);
@@ -153,6 +153,7 @@ function mainLoop(){
     currentCoins = 0;
     destroyCoins();
     initCoins();
+    deaths++;
   }
   //37-40 = left up right down
   var speed = 10 * player.GetMass();
@@ -190,7 +191,7 @@ function draw(context){
 	context.fillRect(0,0,canvasWidth,canvasHeight);
   context.font = "30px Verdana";
   context.fillStyle = "#fff";
-  context.fillText("Level: " + (level+1) + "  " + "Coins: " + (totalCoins+currentCoins), 10,30);
+  context.fillText("Level: " + (level+1) + "  " + "Coins: " + (totalCoins+currentCoins) + " Deaths:" + deaths, 10,30);
 
   context.save();
 	context.translate(0, canvasHeight);
@@ -208,27 +209,13 @@ function draw(context){
   context.restore();
 }
 
-function mouseSquare(e) {
+function handleClick(e) {
 	var mouseX = e.clientX/(canvasWidth/worldWidth);
 	var mouseY = (canvasHeight-e.clientY)/(canvasHeight/worldHeight);
-  createCar(mouseX,mouseY);
+  game.handleMouse(mouseX,mouseY);
 }
 
-function initControls() {
-  for (var i = 0; i < 222; i++) {
-    keys.push(false);
-  }
-}
 
-function keyUp(e) {
-  var key = e.keyCode;
-  keys[key] = false;
-}
-
-function keyDetect(e) {
-  var key = e.keyCode;
-  keys[key] = true;
-}
 
 function getOther(contactPtr) {
     var contact = Box2D.wrapPointer( contactPtr, b2Contact );
@@ -246,60 +233,16 @@ listener.BeginContact = function (contactPtr) {
     var other = getOther(contactPtr);
     if(other == null) return;
     if(other.type == undefined) return;
-    if(other.type == "ground") {
-      jump = 0;
-    }
-    if(other.type == "goal"){
-      level++;
-      weWon = true;
-    }
-    if(other.type == "cartop") {
-      jump = 0;
-    }
-    if(other.type.substring(0,4) == "coin"){
-      currentCoins++;
-      coinDestroy = other.type;
-    }
+    game.playerContact(other);
 }
 listener.EndContact = function(contactPtr) {
   var other = getOther(contactPtr);
   if(other == null)return;
-  if(other.type == "ground") {
-    jump = 1;
-  }
+  game.playerEndContact(other);
 };
 listener.PreSolve = function() {};
 listener.PostSolve = function() {};
-
-var levels = [
-  [
-    {shape:"circle",x:1,y:4,size:0.5, type:"player"},
-    {shape:"circle",x:28,y:21,size:0.5, type:"goal"},
-    {shape:"rect",x:2,y:0,w:4,h:1.5, type:"ground"},
-    {shape:"rect",x:13,y:4,w:8,h:1.5, type:"ground"},
-    {shape:"rect",x:25,y:8,w:10,h:1.5, type:"ground"},
-    {shape:"rect",x:13,y:12,w:8,h:1.5, type:"ground"},
-    {shape:"rect",x:2,y:16,w:9,h:2, type:"ground"},
-    {shape:"rect",x:27,y:20,w:8,h:1.5, type:"ground"},
-    {shape:"circle",x:13, y:14,size:1/4,type:"coin1"},
-    {shape:"circle",x:4,y:18,size:1/4,type:"coin2"}
-  ],
-
-  [
-    {shape:"circle",x:1,y:4,size:.5, type:"player"},
-    {shape:"circle",x:15,y:5,size:.5, type:"goal"},
-    {shape:"rect",x:13,y:0,w:29,h:3, type:"ground"}
-  ],
-
-  [
-    {shape:"circle",x:4,y:4,size:.5, type:"player"},
-    {shape:"circle",x:5,y:9,size:.5, type:"goal"},
-    {shape:"rect",x:0,y:0,w:10,h:3, type:"ground"},
-    {shape:"rect",x:27,y:4,w:2.5,h:1.5, type:"ground"},
-    {shape:"rect",x:4,y:8,w:9.4,h:1.5, type:"ground"},
-    {shape:"circle",x:24,y:6,size:1/4,type:"coin1"}
-  ]
-];
+world.SetContactListener( listener );
 function levelInit() {
   weWon = false;
   for(var i = 0;i < levelBodies.length;i ++) {
@@ -387,8 +330,5 @@ function cheat() {
   levelInit();
   return "-1 karma";
 }
+document.addEventListener("click", handleClick);
 setInterval(mainLoop, 1000/60);
-document.addEventListener("click", mouseSquare);
-document.addEventListener("keydown", keyDetect);
-document.addEventListener("keyup", keyUp);
-world.SetContactListener( listener );
