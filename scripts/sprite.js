@@ -1,5 +1,8 @@
 function GameObject(params,image) {
+  var t = this;
   this.region = image;
+  this.width = 1;
+  this.height = 1;
   function createBody(params) {
     var bd = new Box2D.b2BodyDef();
     bd.set_type(params.static ? Module.b2_staticBody : Module.b2_dynamicBody);
@@ -13,6 +16,8 @@ function GameObject(params,image) {
       var verts = [];
       var w = params.w || 1;
       var h = params.h || 1;
+      t.width = w;
+      t.height = h;
       verts.push( new Box2D.b2Vec2(-w/2,-h/2) );
       verts.push( new Box2D.b2Vec2(w/2,-h/2) );
       verts.push( new Box2D.b2Vec2(w/2,h/2) );
@@ -50,10 +55,9 @@ function GameObject(params,image) {
       context.drawImage(this.region,-r,-r,2*r,2*r);
     }
     if(this.body.shape == "rect") {
-      var shape = this.body.GetFixtureList().GetAABB().GetExtents();
-      var width = shape.get_x();
-      var height = shape.get_y();
-      context.drawImage(this.region,-width,-height,2*width,2*height);
+      context.drawImage(this.region,-t.width/2,-t.height/2,t.width,t.height);
+    /*  console.log(t.width + " " + t.height);
+      console.log(this);*/
     }
     context.restore();
   }
