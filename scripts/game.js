@@ -15,6 +15,7 @@ var trump = new Image();
 var banana = new Image();
 trump.src = "trump.png";
 banana.src = "banana.jpg";
+
 function Game() {
 
   this.init = function() {
@@ -37,7 +38,7 @@ function Game() {
     if(other.type == "cartop") {
       jump = 0;
     }
-    if(other.type.substring(0,4) == "coin"){
+    if(typeof other.type == "string") if(other.type.substring(0,4) == "coin"){
       currentCoins++;
       coinDestroy = other.type;
     }
