@@ -8,6 +8,8 @@ var canvasWidth = 600;
 var canvasHeight = 480;
 
 var keys = [];
+var mario = new Image();
+mario.src = "mario.png";
 function initControls() {
   for (var i = 0; i < 222; i++) {
     keys.push(false);
@@ -160,6 +162,7 @@ function draw(context){
     levelCoins[i].draw(context);
   }
   context.restore();
+  context.drawImage(mario,0,0,25,40,0,0,62.5,100);
 }
 
 function handleClick(e) {
