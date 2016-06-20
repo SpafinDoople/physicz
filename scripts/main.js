@@ -37,35 +37,12 @@ var gameObjects = [];
 
 initControls();
 
-/*function createDynamicRectangle(x,y,w,h,type,img) {
-  var bd = new Box2D.b2BodyDef();
-  bd.set_type(Module.b2_dynamicBody);
-  bd.set_position(new Box2D.b2Vec2(x, y));
-
-  var body = world.CreateBody(bd);
-  var verts = [];
-  verts.push( new Box2D.b2Vec2(-w/2,-h/2) );
-  verts.push( new Box2D.b2Vec2(w/2,-h/2) );
-  verts.push( new Box2D.b2Vec2(w/2,h/2) );
-  verts.push( new Box2D.b2Vec2(-w/2,h/2) );
-  var rshape = createPolygonShape(verts);
-
-  body.CreateFixture(rshape, 1.0);
-  body.type = type;
-  body.img = banana;
-  //body.shape="rect";
-  if(type != "wall") {
-    gameObjects.push(new GameObject(body, img));
-  }
-  return body;
-}*/
-
 function createCar(x,y) {
   var wheel1 = new GameObject({
     static: false,
     x: x+1.5,
     y: y,
-    r: 7/10,
+    r: 0.7,
     friction: 10,
     restitution: 3/4,
     sensor: false,
@@ -76,7 +53,7 @@ function createCar(x,y) {
     static: false,
     x: x-1.5,
     y: y,
-    r: 7/10,
+    r: 0.7,
     friction: 10,
     restitution: 3/4,
     sensor: false,
@@ -86,7 +63,7 @@ function createCar(x,y) {
   var body = new GameObject({
     static: false,
     x: x,
-    y: y+1/10,
+    y: y,
     w: 3,
     h: 1,
     friction: 10,
@@ -94,7 +71,8 @@ function createCar(x,y) {
     sensor: false,
     type: "cartop",
     shape: "rect"
-  },trump);
+  },banana);
+  gameObjects.push(wheel1,wheel2,body);
   //var body = createDynamicRectangle(x,y+1/10,2,1,"cartop");
 
   var joint1 = new b2RevoluteJointDef();

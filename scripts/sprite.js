@@ -3,16 +3,16 @@ function GameObject(params,image) {
   function createBody(params) {
     var bd = new Box2D.b2BodyDef();
     bd.set_type(params.static ? Module.b2_staticBody : Module.b2_dynamicBody);
-    bd.set_position(new Box2D.b2Vec2(params.x | 0, params.y | 0));
+    bd.set_position(new Box2D.b2Vec2(params.x || 0, params.y || 0));
     var body = world.CreateBody(bd);
     var shape;
     if(params.shape == "circle") {
       shape = new Box2D.b2CircleShape();
-      shape.set_m_radius(params.r);
+      shape.set_m_radius(params.r || 1);
     } else if(params.shape == "rect") {
       var verts = [];
-      var w = params.w;
-      var h = params.h;
+      var w = params.w || 1;
+      var h = params.h || 1;
       verts.push( new Box2D.b2Vec2(-w/2,-h/2) );
       verts.push( new Box2D.b2Vec2(w/2,-h/2) );
       verts.push( new Box2D.b2Vec2(w/2,h/2) );
