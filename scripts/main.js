@@ -1,7 +1,7 @@
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 var game = new Game();
-
+//lel
 var worldWidth = 30;
 var worldHeight = 24;
 var canvasWidth = 600;
