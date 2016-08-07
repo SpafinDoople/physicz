@@ -2,14 +2,14 @@ var levels = [
   [
     {shape:"circle",x:1,y:4,size:0.5, type:"player"},
     {shape:"circle",x:28,y:21,size:0.5, type:"goal"},
-    {shape:"rect",x:2,y:0,w:4,h:1.5, type:"ground"},
-    {shape:"rect",x:13,y:4,w:8,h:1.5, type:"ground"},
-    {shape:"rect",x:25,y:8,w:10,h:1.5, type:"ground"},
-    {shape:"rect",x:13,y:12,w:8,h:1.5, type:"ground"},
-    {shape:"rect",x:2,y:16,w:9,h:2, type:"ground"},
-    {shape:"rect",x:27,y:20,w:8,h:1.5, type:"ground"},
-    {shape:"circle",x:13, y:14,size:1/4,type:"coin1"},
-    {shape:"circle",x:4,y:18,size:1/4,type:"coin2"}
+    {shape:"rect",x:2,y:0,w:4,h:1, type:"ground"},
+    {shape:"rect",x:13,y:4,w:8,h:1, type:"ground"},
+    {shape:"rect",x:25,y:8,w:10,h:1, type:"ground"},
+    {shape:"rect",x:13,y:12,w:8,h:1, type:"ground"},
+    {shape:"rect",x:2,y:16,w:8,h:2, type:"ground"},
+    {shape:"rect",x:27,y:20,w:9,h:1.5, type:"ground"},
+    {shape:"circle",x:13, y:14,size:1/2,type:"coin1"},
+    {shape:"circle",x:4,y:18,size:1/2,type:"coin2"}
   ],
 
   [

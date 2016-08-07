@@ -26,6 +26,7 @@ function GameObject(params,image) {
     } else if(params.shape == "poly") {
       shape = createPolygonShape(params.verts);
     } else {
+
     }
     var fix = body.CreateFixture(shape, 1.0);
     if(params.shape == "circle") {
@@ -55,7 +56,12 @@ function GameObject(params,image) {
       context.drawImage(this.region,-r,-r,2*r,2*r);
     }
     if(this.body.shape == "rect") {
-      context.drawImage(this.region,-t.width/2,-t.height/2,t.width,t.height);
+      for(var i = 0; i < Math.ceil(t.width/t.height);i ++) {
+        //drawImage(this.region, -t.width/2 + i*)
+        context.drawImage(this.region,-t.width/2+i*t.height,-t.height/2,t.height,t.height);
+      }
+
+      //context.drawImage(this.region,-t.width/2,-t.height/2,t.width,t.height);
     /*  console.log(t.width + " " + t.height);
       console.log(this);*/
     }
