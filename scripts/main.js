@@ -13,15 +13,21 @@ var direction = "right";
 var mario = new Image();
 mario.src = "mario.png";
 
+document.getElementById("bgmusic").loop = true;
+document.getElementById("bgmusic").autoplay = true;
+
+
 function initControls() {
   for (var i = 0; i < 222; i++) {
     keys.push(false);
   }
 }
+
 function keyUp(e) {
   var key = e.keyCode;
   keys[key] = false;
 }
+
 function keyDetect(e) {
   var key = e.keyCode;
   keys[key] = true;v
@@ -42,6 +48,65 @@ var timeStep = 1/60;
 var gameObjects = [];
 
 initControls();
+
+function createTriangleCar(x,y,size) {
+  var triangle = new GameObject({
+    static: false,
+    x: x,
+    y: y,
+    friction: 10,
+    restitution: 3/4,
+    sensor: false,
+    type: "triangle",
+    shape: "poly",
+    verts: [
+      new Box2D.b2Vec2(Math.sin(60)*size,-Math.cos(60)*size),
+      new Box2D.b2Vec2(-Math.sin(60)*size,-Math.cos(60)*size),
+      new Box2D.b2Vec2(0,size+1)
+    ]
+  },undefined);
+  var wheel1 = new GameObject({
+    static: false,
+    x: x,
+    y: y + size + 1,
+    r: size/5,
+    friction: 10,
+    restitution: 3/4,
+    sensor: false,
+    type: "wheel",
+    shape: "circle",
+  }, trump);
+  var wheel2 = new GameObject({
+    static: false,
+    x: x - Math.sin(60)*size,
+    y: y - Math.cos(60)*size,
+    r: size/5,
+    friction: 10,
+    restitution: 3/4,
+    sensor: false,
+    type: "wheel",
+    shape: "circle",
+  }, trump);
+  var wheel3 = new GameObject({
+    static: false,
+    x: x + Math.sin(60)*size,
+    y: y - Math.cos(60)*size,
+    r: size/5,
+    friction: 10,
+    restitution: 3/4,
+    sensor: false,
+    type: "wheel",
+    shape: "circle",
+  }, trump);
+  gameObjects.push(wheel1, wheel2, wheel3, triangle);
+  var joint1 = new Box2D.b2RevoluteJointDef();
+  var joint2 = new Box2D.b2RevoluteJointDef();
+  var joint3 = new Box2D.b2RevoluteJointDef();
+
+  joint1.Initialize(wheel1.body, triangle.body, wheel1.body.GetWorldCenter());
+  joint2.Initialize(wheel2.body, triangle.body, wheel2.body.GetWorldCenter());
+  joint3.Initialize(wheel3.body, triangle.body, wheel3.body.GetWorldCenter());
+}
 
 function createCar(x,y) {
   var wheel1 = new GameObject({
@@ -77,15 +142,15 @@ function createCar(x,y) {
     sensor: false,
     type: "cartop",
     shape: "rect"
-  },block);
+  },banana);
   gameObjects.push(wheel1,wheel2,body);
   //var body = createDynamicRectangle(x,y+1/10,2,1,"cartop");
 
   var joint1 = new b2RevoluteJointDef();
   var joint2 = new b2RevoluteJointDef();
 
-  joint1.Initialize(wheel1.body,body.body,wheel1.body.GetWorldCenter());
-  joint2.Initialize(wheel2.body,body.body,wheel2.body.GetWorldCenter());
+  joint1.Initialize(wheel1.body, body.body, wheel1.body.GetWorldCenter());
+  joint2.Initialize(wheel2.body, body.body, wheel2.body.GetWorldCenter());
 
   this.world.CreateJoint(joint1);
   this.world.CreateJoint(joint2);
@@ -94,10 +159,14 @@ function createCar(x,y) {
 function handleClick(e) {
 	var mouseX = e.clientX/(canvasWidth/worldWidth);
 	var mouseY = (canvasHeight-e.clientY)/(canvasHeight/worldHeight);
-  game.handleMouse(mouseX,mouseY);
+  console.log(play);
+  if(play) {
+    game.handleMouse(mouseX,mouseY);
+  }
+  if ((mouseX <= 355) && (mouseX >= 295) && (mouseY >= 215) && (mouseY <= 265)) {
+    buttonClicked = true;
+  }
 }
-
-
 
 function getOther(contactPtr) {
     var contact = Box2D.wrapPointer( contactPtr, b2Contact );
@@ -110,44 +179,37 @@ function getOther(contactPtr) {
     return other;
     //console.log(other.type);
 }
+
 listener = new Box2D.JSContactListener();
+
 listener.BeginContact = function (contactPtr) {
     var other = getOther(contactPtr);
     if(other == null) return;
     if(other.type == undefined) return;
     game.playerContact(other);
 }
+
 listener.EndContact = function(contactPtr) {
   var other = getOther(contactPtr);
   if(other == null)return;
   game.playerEndContact(other);
 };
+
 listener.PreSolve = function() {};
 listener.PostSolve = function() {};
 world.SetContactListener( listener );
 
-function levelInit() {
-  weWon = false;
-  var wheel1 = new GameObject({
-    static: false,
-    x: 15,
-    y: 12,
-    friction: 10,
-    restitution: 3/4,
-    sensor: false,
-    type: "triangle",
-    shape: "poly",
-    verts: [
-      new Box2D.b2Vec2(Math.sin(60)*2,-Math.cos(60)*2),
-      new Box2D.b2Vec2(-Math.sin(60)*2,-Math.cos(60)*2),
-      new Box2D.b2Vec2(0,3)
-    ]
-  },undefined);
+function cleanupLevel() {
   for(var i = 0;i < gameObjects.length;i ++) {
     world.DestroyBody(gameObjects[i].body);
   }
   destroyCoins();
   gameObjects = [];
+}
+
+function levelInit() {
+  weWon = false;
+  cleanupLevel();
   if(level < levels.length && level >= 0) {
     var levelData = levels[level];
     for(var i = 0;i < levelData.length;i ++) {
@@ -219,7 +281,7 @@ function destroyCoins() {
   levelCoins = [];
 }
 
-function destroyCoin(type) {
+function destroyCoin(tplayype) {
   if(type.substring(0,4) != "coin") return;
   coinDestroy = 0;
   for(var i = 0;i < levelCoins.length;i ++) {
@@ -234,9 +296,7 @@ function destroyCoin(type) {
 levelInit();
 
 setInterval(function() {
-  if(startNow) {
-    play = 1;
-    document.addEventListener("click", handleClick);
-  }
+  if(startNow) play = 1;
   if(play) game.mainLoop();
 }, 1000/60);
+document.addEventListener("click", handleClick);

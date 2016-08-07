@@ -124,6 +124,6 @@ function Game() {
     }
   }
   this.handleMouse = function(x,y) {
-    createCar(x,y)
+    createTriangleCar(x,y,3);
   }
 }
